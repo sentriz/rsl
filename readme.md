@@ -20,11 +20,12 @@
 ##### available formats
 
 - **csv**
+- **js** (javascript objects, decode only)
 - **json**
 - **toml**
-- **yaml**
 - **xml** (lossy support for arbitrary objects)
 - **xmlstd** (lossless but limited)
+- **yaml**
 
 ### examples
 
@@ -155,4 +156,11 @@
     $ rsl csv json <example.csv | jq -r '.[] | select(.artist == "Dopplereffekt") | .album'
     Gesamtkunstwerk
     Myon-Neutrino
+```
+
+```shell
+    # parse javascript objects
+    $ node -e 'console.log({colour: "blue", v: Math.random()})' | rsl js yaml
+    colour: blue
+    v: 0.7409782831156317
 ```

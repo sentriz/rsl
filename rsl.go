@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"go.senan.xyz/rsl/csv"
+	"go.senan.xyz/rsl/js"
 	"go.senan.xyz/rsl/json"
 	"go.senan.xyz/rsl/toml"
 	"go.senan.xyz/rsl/xml"
@@ -19,12 +20,13 @@ type Format interface {
 }
 
 var formats = map[string]Format{
+	"csv":     csv.New(),
+	"js":      js.New(),
 	"json":    json.New(),
 	"toml":    toml.New(),
-	"yaml":    yaml.New(),
-	"xml_std": xmlstd.New(),
 	"xml":     xml.New(),
-	"csv":     csv.New(),
+	"xml_std": xmlstd.New(),
+	"yaml":    yaml.New(),
 }
 
 func main() {
