@@ -25,9 +25,9 @@ func (*CSV) Encode(w io.Writer, v any) error {
 
 	switch rv := reflect.ValueOf(v); elemOr(rv.Index(0)).Kind() {
 	case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64, reflect.String:
-		writer.Write([]string{"result"})
+		_ = writer.Write([]string{"result"})
 		for i := 0; i < rv.Len(); i++ {
-			writer.Write([]string{fmt.Sprint(rv.Index(i))})
+			_ = writer.Write([]string{fmt.Sprint(rv.Index(i))})
 		}
 
 	case reflect.Map:
@@ -36,13 +36,13 @@ func (*CSV) Encode(w io.Writer, v any) error {
 			header = append(header, v.String())
 		}
 		sort.Strings(header)
-		writer.Write(header)
+		_ = writer.Write(header)
 		for i := 0; i < rv.Len(); i++ {
 			var row []string
 			for _, head := range header {
 				row = append(row, fmt.Sprint(elemOr(rv.Index(i)).MapIndex(reflect.ValueOf(head))))
 			}
-			writer.Write(row)
+			_ = writer.Write(row)
 		}
 
 	case reflect.Slice:
@@ -50,13 +50,13 @@ func (*CSV) Encode(w io.Writer, v any) error {
 		for i := 0; i < elemOr(rv.Index(0)).Len(); i++ {
 			header = append(header, fmt.Sprintf("%c", 'a'+i))
 		}
-		writer.Write(header)
+		_ = writer.Write(header)
 		for i := 0; i < rv.Len(); i++ {
 			var row []string
 			for j := range header {
 				row = append(row, fmt.Sprint(rv.Index(i).Elem().Index(j)))
 			}
-			writer.Write(row)
+			_ = writer.Write(row)
 		}
 
 	default:
