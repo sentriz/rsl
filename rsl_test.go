@@ -85,6 +85,16 @@ func TestJSONCSV(t *testing.T) {
 	)
 }
 
+func TestYAMLJSONNullKey(t *testing.T) {
+	yaml := yaml.New()
+	json := json.New()
+
+	testLine(t,
+		yaml, []string{`men: [John Smith, Bill Jones]`, `women:`, `  - Mary Smith`, `  - Susan Williams`},
+		json, []string{`{"men":["John Smith","Bill Jones"],"women":["Mary Smith","Susan Williams"]}`},
+	)
+}
+
 func testLine(t *testing.T, inFormat Format, in []string, outFormat Format, out []string) {
 	v, err := inFormat.Decode(bytes.NewReader([]byte(strings.Join(in, "\n"))))
 	be.NilErr(t, err)

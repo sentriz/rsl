@@ -23,7 +23,7 @@ func (*CSV) Encode(w io.Writer, v any) error {
 	writer := csv.NewWriter(w)
 	defer writer.Flush()
 
-	switch rv := reflect.ValueOf(v); elemOr(rv.Index(0)).Kind() {
+	switch rv := reflect.ValueOf(v); maybeElem(rv.Index(0)).Kind() {
 	case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64, reflect.String:
 		_ = writer.Write([]string{"result"})
 		for i := 0; i < rv.Len(); i++ {
@@ -32,7 +32,7 @@ func (*CSV) Encode(w io.Writer, v any) error {
 
 	case reflect.Map:
 		var header []string
-		for _, v := range elemOr(rv.Index(0)).MapKeys() {
+		for _, v := range maybeElem(rv.Index(0)).MapKeys() {
 			header = append(header, v.String())
 		}
 		sort.Strings(header)
@@ -40,14 +40,14 @@ func (*CSV) Encode(w io.Writer, v any) error {
 		for i := 0; i < rv.Len(); i++ {
 			var row []string
 			for _, head := range header {
-				row = append(row, fmt.Sprint(elemOr(rv.Index(i)).MapIndex(reflect.ValueOf(head))))
+				row = append(row, fmt.Sprint(maybeElem(rv.Index(i)).MapIndex(reflect.ValueOf(head))))
 			}
 			_ = writer.Write(row)
 		}
 
 	case reflect.Slice:
 		var header []string
-		for i := 0; i < elemOr(rv.Index(0)).Len(); i++ {
+		for i := 0; i < maybeElem(rv.Index(0)).Len(); i++ {
 			header = append(header, fmt.Sprintf("%c", 'a'+i))
 		}
 		_ = writer.Write(header)
@@ -93,9 +93,13 @@ func (*CSV) Decode(r io.Reader) (any, error) {
 	return rows, nil
 }
 
-func elemOr(rv reflect.Value) reflect.Value {
-	if rv.Kind() == reflect.Interface {
-		return rv.Elem()
+func maybeElem(rv reflect.Value) reflect.Value {
+	for {
+		switch rv.Kind() {
+		case reflect.Interface, reflect.Pointer:
+			rv = rv.Elem()
+		default:
+			return rv
+		}
 	}
-	return rv
 }
