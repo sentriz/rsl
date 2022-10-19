@@ -9,10 +9,16 @@ import (
 	"sort"
 )
 
-type CSV struct{}
+type CSV struct {
+	addPseudoHeader bool
+}
 
 func New() *CSV {
 	return &CSV{}
+}
+
+func NewWithPseudoHeader() *CSV {
+	return &CSV{addPseudoHeader: true}
 }
 
 func (*CSV) Encode(w io.Writer, v any) error {
@@ -66,28 +72,42 @@ func (*CSV) Encode(w io.Writer, v any) error {
 	return writer.Error()
 }
 
-func (*CSV) Decode(r io.Reader) (any, error) {
-	reader := csv.NewReader(r)
-	header, err := reader.Read()
-	if err != nil {
-		return nil, fmt.Errorf("reader header: %v", err)
+func (c *CSV) Decode(r io.Reader) (any, error) {
+	var header []string
+	var rows []map[string]string
+
+	addRow := func(raw []string) {
+		row := map[string]string{}
+		for i := range header {
+			row[header[i]] = raw[i]
+		}
+		rows = append(rows, row)
 	}
 
-	var rows []map[string]string
+	reader := csv.NewReader(r)
+	firstRow, err := reader.Read()
+	if err != nil {
+		return nil, fmt.Errorf("read first row: %v", err)
+	}
+
+	if c.addPseudoHeader {
+		for i := range firstRow {
+			header = append(header, fmt.Sprintf("%c", 'a'+i))
+		}
+		addRow(firstRow)
+	} else {
+		header = firstRow
+	}
+
 	for {
-		rawrow, err := reader.Read()
+		raw, err := reader.Read()
 		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil {
 			return nil, fmt.Errorf("reading row: %v", err)
 		}
-
-		row := map[string]string{}
-		for i := range header {
-			row[header[i]] = rawrow[i]
-		}
-		rows = append(rows, row)
+		addRow(raw)
 	}
 
 	return rows, nil

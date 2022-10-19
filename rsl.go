@@ -21,11 +21,12 @@ type Format interface {
 
 var formats = map[string]Format{
 	"csv":     csv.New(),
+	"csv-ph":  csv.NewWithPseudoHeader(),
 	"js":      js.New(),
 	"json":    json.New(),
 	"toml":    toml.New(),
 	"xml":     xml.New(),
-	"xml_std": xmlstd.New(),
+	"xml-std": xmlstd.New(),
 	"yaml":    yaml.New(),
 }
 

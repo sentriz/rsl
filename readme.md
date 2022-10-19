@@ -20,11 +20,12 @@
 ##### available formats
 
 - **csv**
+- **csv-ph** (csv with generated pseudo-header)
 - **js** (javascript objects, decode only)
 - **json**
 - **toml**
 - **xml** (lossy support for arbitrary objects)
-- **xmlstd** (lossless but limited)
+- **xml-std** (lossless but limited)
 - **yaml**
 
 ### examples
