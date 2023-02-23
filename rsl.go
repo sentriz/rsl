@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"go.senan.xyz/rsl/csv"
+	"go.senan.xyz/rsl/ini"
 	"go.senan.xyz/rsl/js"
 	"go.senan.xyz/rsl/json"
 	"go.senan.xyz/rsl/toml"
@@ -28,6 +29,7 @@ var formats = map[string]Format{
 	"xml":     xml.New(),
 	"xml-std": xmlstd.New(),
 	"yaml":    yaml.New(),
+	"ini":     ini.New(),
 }
 
 func main() {
