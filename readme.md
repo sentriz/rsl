@@ -5,7 +5,7 @@
 
 ### installation
 
-```shell
+```
     $ go install go.senan.xyz/rsl@latest
 ```
 
@@ -13,7 +13,7 @@
 
 ##### command line
 
-```shell
+```
     $ rsl <src format> <dest format>
 ```
 
