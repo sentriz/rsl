@@ -21,6 +21,7 @@
 
 - **csv**
 - **csv-ph** (csv with generated pseudo-header)
+- **ini** (decode only)
 - **js** (javascript objects, decode only)
 - **json**
 - **toml**
