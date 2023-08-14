@@ -11,22 +11,20 @@ import (
 
 type CSV struct {
 	addPseudoHeader bool
+	delimiter       rune
 }
 
-func New() *CSV {
-	return &CSV{}
+func New(addPseudoHeader bool, delimiter rune) *CSV {
+	return &CSV{addPseudoHeader: addPseudoHeader, delimiter: delimiter}
 }
 
-func NewWithPseudoHeader() *CSV {
-	return &CSV{addPseudoHeader: true}
-}
-
-func (*CSV) Encode(w io.Writer, v any) error {
+func (c *CSV) Encode(w io.Writer, v any) error {
 	if reflect.TypeOf(v).Kind() != reflect.Slice {
 		v = []any{v}
 	}
 
 	writer := csv.NewWriter(w)
+	writer.Comma = c.delimiter
 	defer writer.Flush()
 
 	switch rv := reflect.ValueOf(v); maybeElem(rv.Index(0)).Kind() {
@@ -85,6 +83,8 @@ func (c *CSV) Decode(r io.Reader) (any, error) {
 	}
 
 	reader := csv.NewReader(r)
+	reader.Comma = c.delimiter
+
 	firstRow, err := reader.Read()
 	if err != nil {
 		return nil, fmt.Errorf("read first row: %v", err)

@@ -17,7 +17,7 @@ import (
 
 func TestEncodeMatrix(t *testing.T) {
 	formats := []Format{
-		csv.New(),
+		csv.New(false, ','),
 		json.New(),
 		toml.New(),
 		yaml.New(),
@@ -49,7 +49,7 @@ func TestEncodeMatrix(t *testing.T) {
 func TestJSONCSV(t *testing.T) {
 	js := js.New()
 	json := json.New()
-	csv := csv.New()
+	csv := csv.New(false, ',')
 
 	testLine(t,
 		json, []string{`1`},

@@ -21,8 +21,10 @@ type Format interface {
 }
 
 var formats = map[string]Format{
-	"csv":     csv.New(),
-	"csv-ph":  csv.NewWithPseudoHeader(),
+	"csv":     csv.New(false, ','),
+	"csv-ph":  csv.New(true, ','),
+	"tsv":     csv.New(false, '\t'),
+	"tsv-ph":  csv.New(true, '\t'),
 	"js":      js.New(),
 	"json":    json.New(),
 	"toml":    toml.New(),
