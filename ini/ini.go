@@ -1,6 +1,7 @@
 package ini
 
 import (
+	"errors"
 	"fmt"
 	"io"
 
@@ -14,7 +15,7 @@ func New() *INI {
 type INI struct{}
 
 func (*INI) Encode(w io.Writer, v any) error {
-	return fmt.Errorf("encoding to ini is not supported")
+	return errors.ErrUnsupported
 }
 
 func (*INI) Decode(r io.Reader) (any, error) {

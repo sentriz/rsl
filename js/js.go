@@ -1,6 +1,7 @@
 package js
 
 import (
+	"errors"
 	"fmt"
 	"io"
 
@@ -14,7 +15,7 @@ func New() *JavaScript {
 }
 
 func (*JavaScript) Encode(w io.Writer, v any) error {
-	return fmt.Errorf("encoding to javascript is not supported")
+	return errors.ErrUnsupported
 }
 
 func (*JavaScript) Decode(r io.Reader) (any, error) {

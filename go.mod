@@ -1,9 +1,9 @@
 module go.senan.xyz/rsl
 
-go 1.19
+go 1.21
 
 require (
-	github.com/BurntSushi/toml v1.2.1
+	github.com/BurntSushi/toml v1.3.2
 	github.com/carlmjohnson/be v0.22.5
 	github.com/robertkrimen/otto v0.2.1
 	github.com/sbabiv/xml2map v1.2.1
@@ -12,6 +12,6 @@ require (
 )
 
 require (
-	golang.org/x/text v0.7.0 // indirect
+	golang.org/x/text v0.13.0 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 )
