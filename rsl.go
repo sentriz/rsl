@@ -20,7 +20,7 @@ type Format interface {
 	Decode(r io.Reader) (any, error)
 }
 
-var formats = map[string]Format{
+var DefaultFormats = map[string]Format{
 	"csv":     csv.New(false, ','),
 	"csv-ph":  csv.New(true, ','),
 	"tsv":     csv.New(false, '\t'),
@@ -46,11 +46,11 @@ func main() {
 		log.Fatalf("usage: %s <src format> <dest format>", os.Args[cmd])
 	}
 
-	src, ok := formats[os.Args[srcn]]
+	src, ok := DefaultFormats[os.Args[srcn]]
 	if !ok {
 		log.Fatalf("unknown src format %q", os.Args[srcn])
 	}
-	dest, ok := formats[os.Args[destn]]
+	dest, ok := DefaultFormats[os.Args[destn]]
 	if !ok {
 		log.Fatalf("unknown dest format %q", os.Args[destn])
 	}

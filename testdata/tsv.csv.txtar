@@ -1,0 +1,7 @@
+-- in --
+a	b	c
+1	one	uno
+
+-- out --
+a,b,c
+1,one,uno
