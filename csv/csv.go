@@ -83,6 +83,7 @@ func (c *CSV) Decode(r io.Reader) (any, error) {
 	}
 
 	reader := csv.NewReader(r)
+	reader.LazyQuotes = true
 	reader.Comma = c.delimiter
 
 	firstRow, err := reader.Read()
