@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"io"
 	"log"
 	"os"
@@ -59,7 +60,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("error decoding to %s: %v", os.Args[srcn], err)
 	}
-	if err := dest.Encode(os.Stdout, v); err != nil {
+
+	out := bufio.NewWriter(os.Stdout)
+	defer out.Flush()
+
+	if err := dest.Encode(out, v); err != nil {
 		log.Fatalf("error encoding to %s: %v", os.Args[destn], err)
 	}
 }
