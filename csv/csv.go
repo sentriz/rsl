@@ -18,7 +18,13 @@ func New(addPseudoHeader bool, delimiter rune) *CSV {
 	return &CSV{addPseudoHeader: addPseudoHeader, delimiter: delimiter}
 }
 
-func (c *CSV) Encode(w io.Writer, v any) error {
+type state struct {
+	header []string
+}
+
+func (c *CSV) State() any { return &state{} }
+
+func (c *CSV) Encode(st any, w io.Writer, v any) error {
 	if reflect.TypeOf(v).Kind() != reflect.Slice {
 		v = []any{v}
 	}
@@ -36,10 +42,15 @@ func (c *CSV) Encode(w io.Writer, v any) error {
 
 	case reflect.Map:
 		var header []string
-		for _, v := range maybeElem(rv.Index(0)).MapKeys() {
-			header = append(header, v.String())
+		if s, ok := st.(*state); ok {
+			header = s.header
 		}
-		sort.Strings(header)
+		if header == nil {
+			for _, v := range maybeElem(rv.Index(0)).MapKeys() {
+				header = append(header, v.String())
+			}
+			sort.Strings(header)
+		}
 		_ = writer.Write(header)
 		for i := 0; i < rv.Len(); i++ {
 			var row []string
@@ -70,7 +81,7 @@ func (c *CSV) Encode(w io.Writer, v any) error {
 	return writer.Error()
 }
 
-func (c *CSV) Decode(r io.Reader) (any, error) {
+func (c *CSV) Decode(st any, r io.Reader) (any, error) {
 	var header []string
 	var rows []map[string]string
 
@@ -111,6 +122,9 @@ func (c *CSV) Decode(r io.Reader) (any, error) {
 		addRow(raw)
 	}
 
+	if s, ok := st.(*state); ok {
+		s.header = header
+	}
 	return rows, nil
 }
 

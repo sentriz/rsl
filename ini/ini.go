@@ -14,7 +14,7 @@ func New() *INI {
 
 type INI struct{}
 
-func (*INI) Encode(w io.Writer, v any) error {
+func (*INI) Encode(_ any, w io.Writer, v any) error {
 	if reflect.TypeOf(v).Kind() != reflect.Map {
 		return fmt.Errorf("can't handle maps")
 	}
@@ -41,7 +41,7 @@ func (*INI) Encode(w io.Writer, v any) error {
 	return nil
 }
 
-func (*INI) Decode(r io.Reader) (any, error) {
+func (*INI) Decode(_ any, r io.Reader) (any, error) {
 	file, err := ini.Load(r)
 	if err != nil {
 		return nil, fmt.Errorf("ini load: %w", err)

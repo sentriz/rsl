@@ -15,7 +15,7 @@ func New() *XML {
 	return &XML{XMLStdLib: xmlstd.New()}
 }
 
-func (*XML) Decode(r io.Reader) (any, error) {
+func (*XML) Decode(_ any, r io.Reader) (any, error) {
 	v, err := xml2map.NewDecoder(r).Decode()
 	return v, err
 }

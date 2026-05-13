@@ -13,7 +13,7 @@ func New() *TOML {
 	return &TOML{}
 }
 
-func (*TOML) Encode(w io.Writer, v any) error {
+func (*TOML) Encode(_ any, w io.Writer, v any) error {
 	// we can't have a top level slice, but it in a map with one key
 	if reflect.TypeOf(v).Kind() != reflect.Map {
 		v = map[string]any{"result": v}
@@ -21,7 +21,7 @@ func (*TOML) Encode(w io.Writer, v any) error {
 	return toml.NewEncoder(w).Encode(v)
 }
 
-func (*TOML) Decode(r io.Reader) (any, error) {
+func (*TOML) Decode(_ any, r io.Reader) (any, error) {
 	var v any
 	_, err := toml.NewDecoder(r).Decode(&v)
 	return v, err

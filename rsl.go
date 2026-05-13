@@ -17,8 +17,8 @@ import (
 )
 
 type Format interface {
-	Encode(w io.Writer, v any) error
-	Decode(r io.Reader) (any, error)
+	Encode(st any, w io.Writer, v any) error
+	Decode(st any, r io.Reader) (any, error)
 }
 
 var DefaultFormats = map[string]Format{
@@ -56,7 +56,12 @@ func main() {
 		log.Fatalf("unknown dest format %q", os.Args[destn])
 	}
 
-	v, err := src.Decode(os.Stdin)
+	var st any
+	if s, ok := src.(interface{ State() any }); ok {
+		st = s.State()
+	}
+
+	v, err := src.Decode(st, os.Stdin)
 	if err != nil {
 		log.Fatalf("error decoding to %s: %v", os.Args[srcn], err)
 	}
@@ -64,7 +69,7 @@ func main() {
 	out := bufio.NewWriter(os.Stdout)
 	defer out.Flush()
 
-	if err := dest.Encode(out, v); err != nil {
+	if err := dest.Encode(st, out, v); err != nil {
 		log.Fatalf("error encoding to %s: %v", os.Args[destn], err)
 	}
 }
