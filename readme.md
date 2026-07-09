@@ -23,12 +23,12 @@
 - **csv-ph** (csv with generated pseudo-header)
 - **tsv**
 - **tsv-ph** (tsv with generated pseudo-header)
+- **html** (decode only)
 - **ini**
 - **js** (javascript objects, decode only)
 - **json**
 - **toml**
-- **xml** (lossy support for arbitrary objects)
-- **xml-std** (lossless but limited)
+- **xml** (lossy support for arbitrary objects, lenient decoding)
 - **yaml**
 
 ### examples

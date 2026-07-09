@@ -7,12 +7,12 @@ import (
 	"os"
 
 	"go.senan.xyz/rsl/csv"
+	"go.senan.xyz/rsl/html"
 	"go.senan.xyz/rsl/ini"
 	"go.senan.xyz/rsl/js"
 	"go.senan.xyz/rsl/json"
 	"go.senan.xyz/rsl/toml"
 	"go.senan.xyz/rsl/xml"
-	"go.senan.xyz/rsl/xmlstd"
 	"go.senan.xyz/rsl/yaml"
 )
 
@@ -22,17 +22,17 @@ type Format interface {
 }
 
 var DefaultFormats = map[string]Format{
-	"csv":     csv.New(false, ','),
-	"csv-ph":  csv.New(true, ','),
-	"tsv":     csv.New(false, '\t'),
-	"tsv-ph":  csv.New(true, '\t'),
-	"js":      js.New(),
-	"json":    json.New(),
-	"toml":    toml.New(),
-	"xml":     xml.New(),
-	"xml-std": xmlstd.New(),
-	"yaml":    yaml.New(),
-	"ini":     ini.New(),
+	"csv":    csv.New(false, ','),
+	"csv-ph": csv.New(true, ','),
+	"tsv":    csv.New(false, '\t'),
+	"tsv-ph": csv.New(true, '\t'),
+	"html":   html.New(),
+	"js":     js.New(),
+	"json":   json.New(),
+	"toml":   toml.New(),
+	"xml":    xml.New(),
+	"yaml":   yaml.New(),
+	"ini":    ini.New(),
 }
 
 func main() {

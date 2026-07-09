@@ -1,0 +1,14 @@
+-- in --
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>hi</title>
+</head>
+<body>
+<p>hello <b>world</b></p>
+<script async src="x.js"></script>
+</body>
+</html>
+-- out --
+{"html":{"@lang":"en","body":{"p":{"#text":"hello","b":"world"},"script":{"@async":"","@src":"x.js"}},"head":{"meta":{"@charset":"utf-8"},"title":"hi"}}}
