@@ -1,8 +1,8 @@
--- in --
+-- src.ini --
 [head]
 a = 10
 
 
--- out --
+-- dest.toml --
 [head]
   a = "10"

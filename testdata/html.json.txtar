@@ -1,4 +1,4 @@
--- in --
+-- src.html --
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,5 +10,5 @@
 <script async src="x.js"></script>
 </body>
 </html>
--- out --
+-- dest.json --
 {"html":{"@lang":"en","head":{"meta":{"@charset":"utf-8"},"title":"hi"},"body":{"p":{"b":"world","#text":"hello"},"script":{"@async":"","@src":"x.js"}}}}

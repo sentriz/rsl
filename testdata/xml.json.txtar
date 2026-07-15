@@ -1,7 +1,7 @@
--- in --
+-- src.xml --
 <select id=cars>
   <option value=volvo selected>Volvo</option>
   <option value="saab">Saab &amp Co</option>
 </select>
--- out --
+-- dest.json --
 {"select":{"@id":"cars","option":[{"@value":"volvo","@selected":"selected","#text":"Volvo"},{"@value":"saab","#text":"Saab \u0026amp Co"}]}}

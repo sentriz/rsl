@@ -1,5 +1,5 @@
--- in --
+-- src.toml --
 b = "200"
 
--- out --
+-- dest.ini --
 b = 200

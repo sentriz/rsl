@@ -1,7 +1,7 @@
--- in --
+-- src.json --
 {"a": "b", "c": {"d": true, "e": 10}}
 
--- out --
+-- dest.toml --
 a = "b"
 
 [c]

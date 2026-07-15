@@ -1,6 +1,6 @@
--- in --
+-- src.ini --
 a = 10
 
--- out --
+-- dest.toml --
 [DEFAULT]
   a = "10"

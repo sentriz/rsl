@@ -1,7 +1,7 @@
--- in --
+-- src.json --
 [1, 2]
 
--- out --
+-- dest.csv --
 result
 1
 2

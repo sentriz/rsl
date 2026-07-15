@@ -22,23 +22,23 @@ func TestFormats(t *testing.T) {
 }
 
 func runPath(t *testing.T, path string) {
-	parts := strings.Split(filepath.Base(path), ".")
-	decoder, encoder := DefaultFormats[parts[0]], DefaultFormats[parts[1]]
-	be.Nonzero(t, decoder)
-	be.Nonzero(t, encoder)
-
 	ar, err := txtar.ParseFile(path)
 	be.NilErr(t, err)
 
+	var decoder, encoder Format
 	var in, expOut []byte
 	for _, f := range ar.Files {
-		switch f.Name {
-		case "in":
-			in = f.Data
-		case "out":
-			expOut = f.Data
+		ext := filepath.Ext(f.Name)
+		format := DefaultFormats[strings.TrimPrefix(ext, ".")]
+		switch strings.TrimSuffix(f.Name, ext) {
+		case "src":
+			decoder, in = format, f.Data
+		case "dest":
+			encoder, expOut = format, f.Data
 		}
 	}
+	be.Nonzero(t, decoder)
+	be.Nonzero(t, encoder)
 	be.Nonzero(t, in)
 	be.Nonzero(t, expOut)
 

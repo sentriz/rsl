@@ -1,5 +1,5 @@
--- in --
+-- src.toml --
 b = 1
 a = 2
--- out --
+-- dest.json --
 {"b":1,"a":2}

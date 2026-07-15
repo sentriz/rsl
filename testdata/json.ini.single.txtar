@@ -1,4 +1,4 @@
--- in --
+-- src.json --
 5
--- out --
+-- dest.ini --
 result = 5

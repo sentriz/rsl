@@ -1,6 +1,6 @@
--- in --
+-- src.json --
 {"c":1,"a":2,"b":3}
--- out --
+-- dest.yaml --
 c: 1
 a: 2
 b: 3

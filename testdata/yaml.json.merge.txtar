@@ -1,8 +1,8 @@
--- in --
+-- src.yaml --
 base: &b
   x: 1
 derived:
   <<: *b
   k: 2
--- out --
+-- dest.json --
 {"base":{"x":1},"derived":{"k":2,"x":1}}

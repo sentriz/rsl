@@ -1,5 +1,5 @@
--- in --
+-- src.json --
 {"b":1,"a":2}
--- out --
+-- dest.csv --
 b,a
 1,2

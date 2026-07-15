@@ -1,9 +1,9 @@
--- in --
+-- src.toml --
 a = "b"
 
 [c]
   d = true
   e = 10.0
 
--- out --
+-- dest.json --
 {"a":"b","c":{"d":true,"e":10}}

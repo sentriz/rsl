@@ -1,5 +1,5 @@
--- in --
+-- src.json --
 [1, 2, 3]
 
--- out --
+-- dest.toml --
 result = [1.0, 2.0, 3.0]

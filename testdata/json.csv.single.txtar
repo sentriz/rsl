@@ -1,6 +1,6 @@
--- in --
+-- src.json --
 2
 
--- out --
+-- dest.csv --
 result
 2
