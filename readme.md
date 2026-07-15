@@ -53,7 +53,7 @@
 
 ```shell
     $ rsl json json <example.json
-    [{"addr":"dublin","name":"jim"},{"addr":"space","name":"miguel"}]
+    [{"name":"jim","addr":"dublin"},{"name":"miguel","addr":"space"}]
 ```
 
 ```shell
@@ -69,10 +69,10 @@
 
 ```shell
     $ rsl json yaml <example.json
-    - addr: dublin
-      name: jim
-    - addr: space
-      name: miguel
+    - name: jim
+      addr: dublin
+    - name: miguel
+      addr: space
 ```
 
 ```shell
@@ -121,20 +121,20 @@
         "@id": "cars",
         "option": [
           {
-            "#text": "Volvo",
-            "@value": "volvo"
+            "@value": "volvo",
+            "#text": "Volvo"
           },
           {
-            "#text": "Saab",
-            "@value": "saab"
+            "@value": "saab",
+            "#text": "Saab"
           },
           {
-            "#text": "Opel",
-            "@value": "opel"
+            "@value": "opel",
+            "#text": "Opel"
           },
           {
-            "#text": "Audi",
-            "@value": "audi"
+            "@value": "audi",
+            "#text": "Audi"
           }
         ]
       }

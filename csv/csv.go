@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"reflect"
-	"sort"
+
+	"go.senan.xyz/rsl/omap"
 )
 
 type CSV struct {
@@ -18,77 +18,73 @@ func New(addPseudoHeader bool, delimiter rune) *CSV {
 	return &CSV{addPseudoHeader: addPseudoHeader, delimiter: delimiter}
 }
 
-type state struct {
-	header []string
-}
-
-func (c *CSV) State() any { return &state{} }
-
-func (c *CSV) Encode(st any, w io.Writer, v any) error {
-	if reflect.TypeOf(v).Kind() != reflect.Slice {
-		v = []any{v}
+func (c *CSV) Encode(w io.Writer, v any) error {
+	rows, ok := v.([]any)
+	if !ok {
+		rows = []any{v}
+	}
+	if len(rows) == 0 {
+		return nil
 	}
 
 	writer := csv.NewWriter(w)
 	writer.Comma = c.delimiter
 	defer writer.Flush()
 
-	switch rv := reflect.ValueOf(v); maybeElem(rv.Index(0)).Kind() {
-	case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64, reflect.String:
-		_ = writer.Write([]string{"result"})
-		for i := 0; i < rv.Len(); i++ {
-			_ = writer.Write([]string{fmt.Sprint(rv.Index(i))})
-		}
-
-	case reflect.Map:
-		var header []string
-		if s, ok := st.(*state); ok {
-			header = s.header
-		}
-		if header == nil {
-			for _, v := range maybeElem(rv.Index(0)).MapKeys() {
-				header = append(header, v.String())
-			}
-			sort.Strings(header)
-		}
+	switch first := rows[0].(type) {
+	case *omap.Map:
+		header := first.Keys()
 		_ = writer.Write(header)
-		for i := 0; i < rv.Len(); i++ {
-			var row []string
+		for _, r := range rows {
+			m, ok := r.(*omap.Map)
+			if !ok {
+				return fmt.Errorf("mixed row types %T", r)
+			}
+			row := make([]string, 0, len(header))
 			for _, head := range header {
-				row = append(row, fmt.Sprint(maybeElem(rv.Index(i)).MapIndex(reflect.ValueOf(head))))
+				if v, ok := m.Get(head); ok {
+					row = append(row, fmt.Sprint(v))
+				} else {
+					row = append(row, "")
+				}
 			}
 			_ = writer.Write(row)
 		}
 
-	case reflect.Slice:
-		var header []string
-		for i := 0; i < maybeElem(rv.Index(0)).Len(); i++ {
-			header = append(header, fmt.Sprintf("%c", 'a'+i))
-		}
-		_ = writer.Write(header)
-		for i := 0; i < rv.Len(); i++ {
-			var row []string
-			for j := range header {
-				row = append(row, fmt.Sprint(rv.Index(i).Elem().Index(j)))
+	case []any:
+		_ = writer.Write(pseudoHeader(len(first)))
+		for _, r := range rows {
+			cells, ok := r.([]any)
+			if !ok {
+				return fmt.Errorf("mixed row types %T", r)
+			}
+			row := make([]string, len(first))
+			for j := range row {
+				if j < len(cells) {
+					row[j] = fmt.Sprint(cells[j])
+				}
 			}
 			_ = writer.Write(row)
 		}
 
 	default:
-		return fmt.Errorf("unsupported type %T", v)
+		_ = writer.Write([]string{"result"})
+		for _, r := range rows {
+			_ = writer.Write([]string{fmt.Sprint(r)})
+		}
 	}
 
 	return writer.Error()
 }
 
-func (c *CSV) Decode(st any, r io.Reader) (any, error) {
+func (c *CSV) Decode(r io.Reader) (any, error) {
 	var header []string
-	var rows []map[string]string
+	var rows []any
 
 	addRow := func(raw []string) {
-		row := map[string]string{}
+		row := omap.New()
 		for i := range header {
-			row[header[i]] = raw[i]
+			row.Set(header[i], raw[i])
 		}
 		rows = append(rows, row)
 	}
@@ -99,13 +95,11 @@ func (c *CSV) Decode(st any, r io.Reader) (any, error) {
 
 	firstRow, err := reader.Read()
 	if err != nil {
-		return nil, fmt.Errorf("read first row: %v", err)
+		return nil, fmt.Errorf("read first row: %w", err)
 	}
 
 	if c.addPseudoHeader {
-		for i := range firstRow {
-			header = append(header, fmt.Sprintf("%c", 'a'+i))
-		}
+		header = pseudoHeader(len(firstRow))
 		addRow(firstRow)
 	} else {
 		header = firstRow
@@ -117,24 +111,18 @@ func (c *CSV) Decode(st any, r io.Reader) (any, error) {
 			break
 		}
 		if err != nil {
-			return nil, fmt.Errorf("reading row: %v", err)
+			return nil, fmt.Errorf("read row: %w", err)
 		}
 		addRow(raw)
 	}
 
-	if s, ok := st.(*state); ok {
-		s.header = header
-	}
 	return rows, nil
 }
 
-func maybeElem(rv reflect.Value) reflect.Value {
-	for {
-		switch rv.Kind() {
-		case reflect.Interface, reflect.Pointer:
-			rv = rv.Elem()
-		default:
-			return rv
-		}
+func pseudoHeader(n int) []string {
+	header := make([]string, 0, n)
+	for i := range n {
+		header = append(header, fmt.Sprintf("%c", 'a'+i))
 	}
+	return header
 }

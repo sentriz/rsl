@@ -11,4 +11,4 @@
 </body>
 </html>
 -- out --
-{"html":{"@lang":"en","body":{"p":{"#text":"hello","b":"world"},"script":{"@async":"","@src":"x.js"}},"head":{"meta":{"@charset":"utf-8"},"title":"hi"}}}
+{"html":{"@lang":"en","head":{"meta":{"@charset":"utf-8"},"title":"hi"},"body":{"p":{"b":"world","#text":"hello"},"script":{"@async":"","@src":"x.js"}}}}

@@ -3,31 +3,29 @@ package ini
 import (
 	"fmt"
 	"io"
-	"reflect"
 
+	"go.senan.xyz/rsl/omap"
 	"gopkg.in/ini.v1"
 )
+
+type INI struct{}
 
 func New() *INI {
 	return &INI{}
 }
 
-type INI struct{}
-
-func (*INI) Encode(_ any, w io.Writer, v any) error {
-	if reflect.TypeOf(v).Kind() != reflect.Map {
-		return fmt.Errorf("can't handle maps")
-	}
-	contents, ok := v.(map[string]any)
+func (*INI) Encode(w io.Writer, v any) error {
+	m, ok := v.(*omap.Map)
 	if !ok {
-		return fmt.Errorf("can only support maps currently")
+		m = omap.New()
+		m.Set("result", v)
 	}
 
 	file := ini.Empty()
-	for k, v := range contents {
-		switch cont := v.(type) {
-		case map[string]any:
-			for kk, vv := range cont {
+	for k, v := range m.All() {
+		switch sec := v.(type) {
+		case *omap.Map:
+			for kk, vv := range sec.All() {
 				_, _ = file.Section(k).NewKey(kk, fmt.Sprint(vv))
 			}
 		default:
@@ -41,18 +39,22 @@ func (*INI) Encode(_ any, w io.Writer, v any) error {
 	return nil
 }
 
-func (*INI) Decode(_ any, r io.Reader) (any, error) {
+func (*INI) Decode(r io.Reader) (any, error) {
 	file, err := ini.Load(r)
 	if err != nil {
 		return nil, fmt.Errorf("ini load: %w", err)
 	}
 
-	val := map[string]map[string]string{}
+	root := omap.New()
 	for _, sec := range file.Sections() {
 		if len(sec.Keys()) == 0 {
 			continue
 		}
-		val[sec.Name()] = sec.KeysHash()
+		m := omap.New()
+		for _, key := range sec.Keys() {
+			m.Set(key.Name(), key.Value())
+		}
+		root.Set(sec.Name(), m)
 	}
-	return val, nil
+	return root, nil
 }

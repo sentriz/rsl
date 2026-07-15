@@ -4,4 +4,4 @@
   <option value="saab">Saab &amp Co</option>
 </select>
 -- out --
-{"select":{"@id":"cars","option":[{"#text":"Volvo","@selected":"selected","@value":"volvo"},{"#text":"Saab \u0026amp Co","@value":"saab"}]}}
+{"select":{"@id":"cars","option":[{"@value":"volvo","@selected":"selected","#text":"Volvo"},{"@value":"saab","#text":"Saab \u0026amp Co"}]}}
