@@ -27,6 +27,7 @@
 - **ini**
 - **js** (javascript objects, decode only)
 - **json**
+- **md**
 - **toml**
 - **xml** (lossy support for arbitrary objects, lenient decoding)
 - **yaml**

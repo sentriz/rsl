@@ -1,0 +1,13 @@
+-- src.md --
+# title
+
+some **bold** and `code` text
+
+- one
+- two
+
+| name | addr |
+| ---- | ---- |
+| jim  | dublin |
+-- dest.json --
+[{"h1":"title"},{"p":"some bold and code text"},{"ul":["one","two"]},{"table":[{"name":"jim","addr":"dublin"}]}]

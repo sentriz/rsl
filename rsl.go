@@ -11,6 +11,7 @@ import (
 	"go.senan.xyz/rsl/ini"
 	"go.senan.xyz/rsl/js"
 	"go.senan.xyz/rsl/json"
+	"go.senan.xyz/rsl/md"
 	"go.senan.xyz/rsl/toml"
 	"go.senan.xyz/rsl/xml"
 	"go.senan.xyz/rsl/yaml"
@@ -29,6 +30,7 @@ var DefaultFormats = map[string]Format{
 	"html":   html.New(),
 	"js":     js.New(),
 	"json":   json.New(),
+	"md":     md.New(),
 	"toml":   toml.New(),
 	"xml":    xml.New(),
 	"yaml":   yaml.New(),

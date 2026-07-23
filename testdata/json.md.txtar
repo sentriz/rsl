@@ -1,0 +1,8 @@
+-- src.json --
+[{"name":"jim","addr":"dublin"},{"name":"miguel","addr":"space"}]
+-- dest.md --
+| name | addr |
+| --- | --- |
+| jim | dublin |
+| miguel | space |
+
