@@ -1,0 +1,7 @@
+-- src.md --
+see [docs](https://example.com/docs) for more
+
+* [Name A](<https://app.example.com/a>)
+* [Name B](<https://app.example.com/b>)
+-- dest.json --
+[{"p":["see",{"a":{"@href":"https://example.com/docs","#text":"docs"}},"for more"]},{"ul":[{"a":{"@href":"https://app.example.com/a","#text":"Name A"}},{"a":{"@href":"https://app.example.com/b","#text":"Name B"}}]}]

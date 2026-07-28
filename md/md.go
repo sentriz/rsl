@@ -140,9 +140,9 @@ func convertBlock(n ast.Node, source []byte) (any, bool) {
 
 	switch n := n.(type) {
 	case *ast.Heading:
-		return block(fmt.Sprintf("h%d", n.Level), inlineText(n, source))
+		return block(fmt.Sprintf("h%d", n.Level), inlineContent(n, source))
 	case *ast.Paragraph, *ast.TextBlock:
-		return block("p", inlineText(n, source))
+		return block("p", inlineContent(n, source))
 	case *ast.FencedCodeBlock:
 		if lang := n.Language(source); lang != nil {
 			m := omap.New()
@@ -178,7 +178,7 @@ func convertListItem(li ast.Node, source []byte) any {
 	for c := li.FirstChild(); c != nil; c = c.NextSibling() {
 		switch c.(type) {
 		case *ast.TextBlock, *ast.Paragraph:
-			blocks = append(blocks, inlineText(c, source))
+			blocks = append(blocks, inlineContent(c, source))
 		default:
 			if v, ok := convertBlock(c, source); ok {
 				blocks = append(blocks, v)
@@ -195,12 +195,15 @@ func tableRows(table *east.Table, source []byte) []any {
 	var header []string
 	rows := []any{}
 	for r := table.FirstChild(); r != nil; r = r.NextSibling() {
-		var cells []string
+		var cells []any
 		for c := r.FirstChild(); c != nil; c = c.NextSibling() {
-			cells = append(cells, inlineText(c, source))
+			cells = append(cells, inlineContent(c, source))
 		}
 		if _, ok := r.(*east.TableHeader); ok {
-			header = cells
+			header = header[:0]
+			for _, c := range cells {
+				header = append(header, fmt.Sprint(c))
+			}
 			continue
 		}
 		row := omap.New()
@@ -214,6 +217,58 @@ func tableRows(table *east.Table, source []byte) []any {
 		rows = append(rows, row)
 	}
 	return rows
+}
+
+func inlineContent(n ast.Node, source []byte) any {
+	parts := []any{}
+	var sb strings.Builder
+	flush := func() {
+		if t := strings.TrimSpace(sb.String()); t != "" {
+			parts = append(parts, t)
+		}
+		sb.Reset()
+	}
+
+	_ = ast.Walk(n, func(c ast.Node, entering bool) (ast.WalkStatus, error) {
+		if !entering {
+			return ast.WalkContinue, nil
+		}
+		switch c := c.(type) {
+		case *ast.Link:
+			flush()
+			parts = append(parts, link(string(c.Destination), inlineText(c, source)))
+			return ast.WalkSkipChildren, nil
+		case *ast.AutoLink:
+			flush()
+			url := string(c.URL(source))
+			parts = append(parts, link(url, url))
+			return ast.WalkSkipChildren, nil
+		case *ast.Text:
+			sb.Write(c.Value(source))
+			if c.SoftLineBreak() || c.HardLineBreak() {
+				sb.WriteByte(' ')
+			}
+		}
+		return ast.WalkContinue, nil
+	})
+	flush()
+
+	switch len(parts) {
+	case 0:
+		return ""
+	case 1:
+		return parts[0]
+	}
+	return parts
+}
+
+func link(href, text string) *omap.Map {
+	a := omap.New()
+	a.Set("@href", href)
+	a.Set("#text", text)
+	m := omap.New()
+	m.Set("a", a)
+	return m
 }
 
 func inlineText(n ast.Node, source []byte) string {
