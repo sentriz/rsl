@@ -4,7 +4,10 @@ import (
 	"bufio"
 	"io"
 	"log"
+	"maps"
 	"os"
+	"slices"
+	"strings"
 
 	"go.senan.xyz/rsl/csv"
 	"go.senan.xyz/rsl/html"
@@ -46,7 +49,8 @@ func main() {
 	)
 
 	if len(os.Args) < nargs {
-		log.Fatalf("usage: %s <src format> <dest format>", os.Args[cmd])
+		log.Printf("usage: %s <src format> <dest format>", os.Args[cmd])
+		log.Fatalf("formats: %s", strings.Join(slices.Sorted(maps.Keys(DefaultFormats)), ", "))
 	}
 
 	src, ok := DefaultFormats[os.Args[srcn]]
