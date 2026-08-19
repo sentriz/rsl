@@ -1,0 +1,34 @@
+-- src.html --
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>hi</title>
+<style>body{color:red}</style>
+</head>
+<body>
+<script src="x.js"></script>
+<div>
+<h1>Title</h1>
+<p>hello <b>world</b>, see <a href="https://example.com">docs</a>.</p>
+<ul>
+<li>one</li>
+<li>two</li>
+</ul>
+<table>
+<tr><th>name</th><th>addr</th></tr>
+<tr><td>jim</td><td>dublin</td></tr>
+</table>
+</div>
+</body>
+</html>
+-- dest.md --
+# Title
+
+hello **world**, see [docs](https://example.com).
+
+- one
+- two
+
+| name | addr   |
+|------|--------|
+| jim  | dublin |

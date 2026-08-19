@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"io"
 	"log"
 	"maps"
@@ -23,6 +24,10 @@ import (
 type Format interface {
 	Encode(w io.Writer, v any) error
 	Decode(r io.Reader) (any, error)
+}
+
+type EncoderFrom interface {
+	EncodeFrom(w io.Writer, r io.Reader, src any) error
 }
 
 var DefaultFormats = map[string]Format{
@@ -62,13 +67,21 @@ func main() {
 		log.Fatalf("unknown dest format %q", os.Args[destn])
 	}
 
+	out := bufio.NewWriter(os.Stdout)
+	defer out.Flush()
+
+	if ef, ok := dest.(EncoderFrom); ok {
+		if err := ef.EncodeFrom(out, os.Stdin, src); err != nil && !errors.Is(err, errors.ErrUnsupported) {
+			log.Fatalf("error encoding %s to %s: %v", os.Args[srcn], os.Args[destn], err)
+		} else if err == nil {
+			return
+		}
+	}
+
 	v, err := src.Decode(os.Stdin)
 	if err != nil {
 		log.Fatalf("error decoding to %s: %v", os.Args[srcn], err)
 	}
-
-	out := bufio.NewWriter(os.Stdout)
-	defer out.Flush()
 
 	if err := dest.Encode(out, v); err != nil {
 		log.Fatalf("error encoding to %s: %v", os.Args[destn], err)

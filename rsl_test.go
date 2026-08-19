@@ -42,10 +42,17 @@ func runPath(t *testing.T, path string) {
 	be.Nonzero(t, in)
 	be.Nonzero(t, expOut)
 
+	var out bytes.Buffer
+	if ef, ok := encoder.(EncoderFrom); ok && ef.EncodeFrom(&out, bytes.NewReader(in), decoder) == nil {
+		if !bytes.Equal(expOut, out.Bytes()) {
+			t.Errorf("\nwant:\n%s\ngot:\n%s", string(expOut), out.String())
+		}
+		return
+	}
+
 	v, err := decoder.Decode(bytes.NewReader(in))
 	be.NilErr(t, err)
 
-	var out bytes.Buffer
 	be.NilErr(t, encoder.Encode(&out, v))
 
 	if !bytes.Equal(expOut, out.Bytes()) {

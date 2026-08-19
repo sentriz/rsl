@@ -1,15 +1,24 @@
 package md
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"strings"
 
+	htmdconverter "github.com/JohannesKaufmann/html-to-markdown/v2/converter"
+	htmdbase "github.com/JohannesKaufmann/html-to-markdown/v2/plugin/base"
+	htmdcommonmark "github.com/JohannesKaufmann/html-to-markdown/v2/plugin/commonmark"
+	htmdstrikethrough "github.com/JohannesKaufmann/html-to-markdown/v2/plugin/strikethrough"
+	htmdtable "github.com/JohannesKaufmann/html-to-markdown/v2/plugin/table"
+
 	"github.com/yuin/goldmark"
-	"github.com/yuin/goldmark/ast"
-	"github.com/yuin/goldmark/extension"
-	east "github.com/yuin/goldmark/extension/ast"
-	"github.com/yuin/goldmark/text"
+	gmast "github.com/yuin/goldmark/ast"
+	gmext "github.com/yuin/goldmark/extension"
+	gmeast "github.com/yuin/goldmark/extension/ast"
+	gmtext "github.com/yuin/goldmark/text"
+
+	"go.senan.xyz/rsl/html"
 	"go.senan.xyz/rsl/omap"
 )
 
@@ -21,6 +30,28 @@ func New() *MD {
 
 func (*MD) Encode(w io.Writer, v any) error {
 	return encode(w, v, 1)
+}
+
+func (*MD) EncodeFrom(w io.Writer, r io.Reader, src any) error {
+	if _, ok := src.(*html.HTML); !ok {
+		return errors.ErrUnsupported
+	}
+
+	conv := htmdconverter.NewConverter(htmdconverter.WithPlugins(
+		htmdbase.NewBasePlugin(),
+		htmdcommonmark.NewCommonmarkPlugin(),
+		htmdtable.NewTablePlugin(),
+		htmdstrikethrough.NewStrikethroughPlugin(),
+	))
+	out, err := conv.ConvertReader(r)
+	if err != nil {
+		return err
+	}
+
+	out = append(out, '\n')
+
+	_, err = w.Write(out)
+	return err
 }
 
 func encode(w io.Writer, v any, level int) error {
@@ -116,12 +147,12 @@ func (*MD) Decode(r io.Reader) (any, error) {
 		return nil, err
 	}
 
-	parser := goldmark.New(goldmark.WithExtensions(extension.Table, extension.Strikethrough)).Parser()
-	doc := parser.Parse(text.NewReader(source))
+	parser := goldmark.New(goldmark.WithExtensions(gmext.Table, gmext.Strikethrough)).Parser()
+	doc := parser.Parse(gmtext.NewReader(source))
 	return convertBlocks(doc, source), nil
 }
 
-func convertBlocks(parent ast.Node, source []byte) []any {
+func convertBlocks(parent gmast.Node, source []byte) []any {
 	items := []any{}
 	for c := parent.FirstChild(); c != nil; c = c.NextSibling() {
 		if v, ok := convertBlock(c, source); ok {
@@ -131,7 +162,7 @@ func convertBlocks(parent ast.Node, source []byte) []any {
 	return items
 }
 
-func convertBlock(n ast.Node, source []byte) (any, bool) {
+func convertBlock(n gmast.Node, source []byte) (any, bool) {
 	block := func(k string, v any) (any, bool) {
 		m := omap.New()
 		m.Set(k, v)
@@ -139,11 +170,11 @@ func convertBlock(n ast.Node, source []byte) (any, bool) {
 	}
 
 	switch n := n.(type) {
-	case *ast.Heading:
+	case *gmast.Heading:
 		return block(fmt.Sprintf("h%d", n.Level), inlineContent(n, source))
-	case *ast.Paragraph, *ast.TextBlock:
+	case *gmast.Paragraph, *gmast.TextBlock:
 		return block("p", inlineContent(n, source))
-	case *ast.FencedCodeBlock:
+	case *gmast.FencedCodeBlock:
 		if lang := n.Language(source); lang != nil {
 			m := omap.New()
 			m.Set("@lang", string(lang))
@@ -151,11 +182,11 @@ func convertBlock(n ast.Node, source []byte) (any, bool) {
 			return block("code", m)
 		}
 		return block("code", blockLines(n, source))
-	case *ast.CodeBlock:
+	case *gmast.CodeBlock:
 		return block("code", blockLines(n, source))
-	case *ast.Blockquote:
+	case *gmast.Blockquote:
 		return block("blockquote", convertBlocks(n, source))
-	case *ast.List:
+	case *gmast.List:
 		tag := "ul"
 		if n.IsOrdered() {
 			tag = "ol"
@@ -165,19 +196,19 @@ func convertBlock(n ast.Node, source []byte) (any, bool) {
 			items = append(items, convertListItem(li, source))
 		}
 		return block(tag, items)
-	case *east.Table:
+	case *gmeast.Table:
 		return block("table", tableRows(n, source))
-	case *ast.HTMLBlock:
+	case *gmast.HTMLBlock:
 		return block("html", blockLines(n, source))
 	}
 	return nil, false
 }
 
-func convertListItem(li ast.Node, source []byte) any {
+func convertListItem(li gmast.Node, source []byte) any {
 	blocks := []any{}
 	for c := li.FirstChild(); c != nil; c = c.NextSibling() {
 		switch c.(type) {
-		case *ast.TextBlock, *ast.Paragraph:
+		case *gmast.TextBlock, *gmast.Paragraph:
 			blocks = append(blocks, inlineContent(c, source))
 		default:
 			if v, ok := convertBlock(c, source); ok {
@@ -191,7 +222,7 @@ func convertListItem(li ast.Node, source []byte) any {
 	return blocks
 }
 
-func tableRows(table *east.Table, source []byte) []any {
+func tableRows(table *gmeast.Table, source []byte) []any {
 	var header []string
 	rows := []any{}
 	for r := table.FirstChild(); r != nil; r = r.NextSibling() {
@@ -199,7 +230,7 @@ func tableRows(table *east.Table, source []byte) []any {
 		for c := r.FirstChild(); c != nil; c = c.NextSibling() {
 			cells = append(cells, inlineContent(c, source))
 		}
-		if _, ok := r.(*east.TableHeader); ok {
+		if _, ok := r.(*gmeast.TableHeader); ok {
 			header = header[:0]
 			for _, c := range cells {
 				header = append(header, fmt.Sprint(c))
@@ -219,7 +250,7 @@ func tableRows(table *east.Table, source []byte) []any {
 	return rows
 }
 
-func inlineContent(n ast.Node, source []byte) any {
+func inlineContent(n gmast.Node, source []byte) any {
 	parts := []any{}
 	var sb strings.Builder
 	flush := func() {
@@ -229,27 +260,27 @@ func inlineContent(n ast.Node, source []byte) any {
 		sb.Reset()
 	}
 
-	_ = ast.Walk(n, func(c ast.Node, entering bool) (ast.WalkStatus, error) {
+	_ = gmast.Walk(n, func(c gmast.Node, entering bool) (gmast.WalkStatus, error) {
 		if !entering {
-			return ast.WalkContinue, nil
+			return gmast.WalkContinue, nil
 		}
 		switch c := c.(type) {
-		case *ast.Link:
+		case *gmast.Link:
 			flush()
 			parts = append(parts, link(string(c.Destination), inlineText(c, source)))
-			return ast.WalkSkipChildren, nil
-		case *ast.AutoLink:
+			return gmast.WalkSkipChildren, nil
+		case *gmast.AutoLink:
 			flush()
 			url := string(c.URL(source))
 			parts = append(parts, link(url, url))
-			return ast.WalkSkipChildren, nil
-		case *ast.Text:
+			return gmast.WalkSkipChildren, nil
+		case *gmast.Text:
 			sb.Write(c.Value(source))
 			if c.SoftLineBreak() || c.HardLineBreak() {
 				sb.WriteByte(' ')
 			}
 		}
-		return ast.WalkContinue, nil
+		return gmast.WalkContinue, nil
 	})
 	flush()
 
@@ -271,24 +302,24 @@ func link(href, text string) *omap.Map {
 	return m
 }
 
-func inlineText(n ast.Node, source []byte) string {
+func inlineText(n gmast.Node, source []byte) string {
 	var sb strings.Builder
-	_ = ast.Walk(n, func(c ast.Node, entering bool) (ast.WalkStatus, error) {
+	_ = gmast.Walk(n, func(c gmast.Node, entering bool) (gmast.WalkStatus, error) {
 		if !entering {
-			return ast.WalkContinue, nil
+			return gmast.WalkContinue, nil
 		}
-		if t, ok := c.(*ast.Text); ok {
+		if t, ok := c.(*gmast.Text); ok {
 			sb.Write(t.Value(source))
 			if t.SoftLineBreak() || t.HardLineBreak() {
 				sb.WriteByte(' ')
 			}
 		}
-		return ast.WalkContinue, nil
+		return gmast.WalkContinue, nil
 	})
 	return strings.TrimSpace(sb.String())
 }
 
-func blockLines(n ast.Node, source []byte) string {
+func blockLines(n gmast.Node, source []byte) string {
 	var sb strings.Builder
 	lines := n.Lines()
 	for i := range lines.Len() {
